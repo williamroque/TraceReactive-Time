@@ -1,0 +1,20 @@
+{
+  "id": "com.tracereactive.time",
+  "name": "Time",
+  "version": "1.0.0",
+  "description": "Nodes for time-based events, scheduling, and calendar-accurate math.",
+  "main": "dist/index.js",
+  "permissions": [],
+  "ioTypes": [
+    {
+      "id": "time:datetime",
+      "label": "Date Time",
+      "color": "sky-500"
+    },
+    {
+      "id": "time:duration",
+      "label": "Duration",
+      "color": "indigo-400"
+    }
+  ]
+}
