@@ -10,7 +10,9 @@ import { ParseDateNode } from './nodes/formatting/ParseDateNode';
 import { FormatDateNode } from './nodes/formatting/FormatDateNode';
 import { ExtractDatePartsNode } from './nodes/formatting/ExtractDatePartsNode';
 
-declare const traceReactive: any;
+import type { TraceReactiveAPI } from '@tracereactive/types';
+
+declare const traceReactive: TraceReactiveAPI;
 
 const nodes = [
     new CurrentTimeNode(),
