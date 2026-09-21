@@ -17,7 +17,7 @@ export class ParseDateNode extends BaseNode {
     ];
 
     readonly properties: PropertyDefinition[] = [
-        { name: 'format', label: 'Format String', type: 'string' as const, defaultValue: 'yyyy-MM-dd' }
+        { name: 'format', label: 'Format String', description: 'Syntax based on date-fns format (e.g. yyyy-MM-dd, do MMMM yyyy).', type: 'string' as const, defaultValue: 'yyyy-MM-dd' }
     ];
 
     async evaluate(inputs: Record<string, any>, properties: Record<string, any>): Promise<Record<string, any>> {

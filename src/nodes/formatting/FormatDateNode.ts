@@ -17,7 +17,7 @@ export class FormatDateNode extends BaseNode {
     ];
 
     readonly properties: PropertyDefinition[] = [
-        { name: 'format', label: 'Format String', type: 'string' as const, defaultValue: 'PPP p' }
+        { name: 'format', label: 'Format String', description: 'Syntax based on date-fns format (e.g. PPP p, yyyy-MM-dd).', type: 'string' as const, defaultValue: 'PPP p' }
     ];
 
     async evaluate(inputs: Record<string, any>, properties: Record<string, any>): Promise<Record<string, any>> {

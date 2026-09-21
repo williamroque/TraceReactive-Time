@@ -19,14 +19,10 @@ export class IntervalNode extends EventNode {
     ];
 
     private intervalIds: Map<string, ReturnType<typeof setInterval>> = new Map();
+    private intervalSettings: Map<string, { intervalMs: number, enabled: boolean }> = new Map();
     static latestEvents: Map<string, { time: string }> = new Map();
 
     register(nodeId: string, emit: (nodeId: string) => void): void {
-        // We cannot reliably access properties directly in `register` without evaluating, 
-        // but typically the app ensures the first evaluate gets called to set things up,
-        // or we could just wait for `evaluate` to set the interval.
-        // Actually, TraceReactive calls `evaluate` whenever the graph is loaded or properties change.
-        // We will start the interval inside `evaluate` instead, using `register` just to store the emitter.
         IntervalNode.emitters.set(nodeId, emit);
     }
 
@@ -36,6 +32,7 @@ export class IntervalNode extends EventNode {
             clearInterval(intervalId);
             this.intervalIds.delete(nodeId);
         }
+        this.intervalSettings.delete(nodeId);
         IntervalNode.latestEvents.delete(nodeId);
         IntervalNode.emitters.delete(nodeId);
     }
@@ -47,23 +44,33 @@ export class IntervalNode extends EventNode {
 
         if (!nodeId) return {};
 
-        // Clean up previous interval if it exists and settings changed
-        const existingInterval = this.intervalIds.get(nodeId);
-        if (existingInterval) {
-            clearInterval(existingInterval);
-            this.intervalIds.delete(nodeId);
-        }
+        const currentSettings = this.intervalSettings.get(nodeId);
+        const settingsChanged = !currentSettings || currentSettings.intervalMs !== intervalMs || currentSettings.enabled !== enabled;
 
-        if (enabled) {
-            const intervalId = setInterval(() => {
-                const emit = IntervalNode.emitters.get(nodeId);
-                if (emit) {
+        if (settingsChanged) {
+            // Clean up previous interval if it exists and settings changed
+            const existingInterval = this.intervalIds.get(nodeId);
+            if (existingInterval) {
+                clearInterval(existingInterval);
+                this.intervalIds.delete(nodeId);
+            }
+
+            this.intervalSettings.set(nodeId, { intervalMs, enabled });
+
+            if (enabled) {
+                const intervalId = setInterval(() => {
                     const time = new Date().toISOString();
                     IntervalNode.latestEvents.set(nodeId, { time });
-                    emit(nodeId);
-                }
-            }, intervalMs);
-            this.intervalIds.set(nodeId, intervalId);
+                    
+                    if (typeof (globalThis as any).traceReactive !== 'undefined' && (globalThis as any).traceReactive.emitEvent) {
+                        (globalThis as any).traceReactive.emitEvent(nodeId);
+                    } else {
+                        const emit = IntervalNode.emitters.get(nodeId);
+                        if (emit) emit(nodeId);
+                    }
+                }, intervalMs);
+                this.intervalIds.set(nodeId, intervalId);
+            }
         }
 
         const latestEvent = IntervalNode.latestEvents.get(nodeId);
